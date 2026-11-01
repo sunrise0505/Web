@@ -16,12 +16,13 @@ public final class ApiModels {
             LocalDate date, int startHour, int durationHours, int participants, String purpose, Booking.Status status,
             LocalDateTime createdAt, List<String> availableActions) {
         static BookingView from(Booking b, List<String> availableActions) {
-            return new BookingView(b.id, b.venue.id, b.venue.name, b.venue.location, b.user.displayName,
+            return new BookingView(b.id, b.venue.id, b.venue.name, b.venue.location.startsWith(b.venue.campus) ? b.venue.location : b.venue.campus + " · " + b.venue.location, b.user.displayName,
                     b.date, b.startHour, b.durationHours, b.participants, b.purpose, b.status, b.createdAt, availableActions);
         }
     }
     public record Slot(int hour, String status) {}
-    public record VenueRequest(@NotBlank @Size(max = 60) String name,
+    public record VenueRequest(@NotBlank @Pattern(regexp = "中心校区|洪家楼校区|趵突泉校区|千佛山校区|兴隆山校区|软件园校区|威海校区|青岛校区") String campus,
+            @NotBlank @Size(max = 60) String name,
             @NotBlank @Pattern(regexp = "篮球|羽毛球|游泳|健身|足球|网球") String category,
             @NotBlank @Size(max = 100) String location, @NotBlank @Size(max = 500) String description,
             @Min(1) @Max(1000) int capacity, @Min(0) @Max(23) int openHour, @Min(1) @Max(24) int closeHour,

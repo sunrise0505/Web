@@ -3,7 +3,7 @@
   <modelVersion>4.0.0</modelVersion>
   <parent><groupId>org.springframework.boot</groupId><artifactId>spring-boot-starter-parent</artifactId><version>3.5.16</version><relativePath/></parent>
   <groupId>edu.campus</groupId><artifactId>java-server</artifactId><version>1.0-SNAPSHOT</version>
-  <name>Campus Venue</name><description>校园场馆预约管理系统</description>
+  <name>Campus Venue</name><description>山东大学场馆预约管理系统</description>
   <properties><java.version>21</java.version><app.default-profile>demo</app.default-profile></properties>
   <profiles><profile><id>course</id><properties><app.default-profile>mysql</app.default-profile></properties></profile></profiles>
   <dependencies>

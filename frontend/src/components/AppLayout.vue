@@ -58,7 +58,9 @@ async function signout() {
         >
       </nav>
       <div class="sidebar-bottom">
-        <div class="sidebar-foot"><span class="online-dot"></span>校园场馆预约管理系统<span>v0.1</span></div>
+        <div class="sidebar-foot">
+          <span class="online-dot"></span>山东大学场馆预约管理系统<span>v0.1</span>
+        </div>
       </div>
     </aside>
     <div class="main-shell">
@@ -66,7 +68,7 @@ async function signout() {
         <div class="breadcrumb">
           <button class="mobile-toggle icon-button" aria-label="打开菜单" @click="menuOpen = true">
             <Menu :size="21" /></button
-          ><span>校园场馆</span><span class="slash">/</span
+          ><span>山东大学</span><span class="slash">/</span
           ><strong>{{
             route.path === '/venues' && user?.role === 'ADMIN' ? '场馆浏览' : route.meta.title
           }}</strong

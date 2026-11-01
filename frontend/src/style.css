@@ -1,5 +1,5 @@
 /* ============================================================
-   校园场馆预约管理系统 — 全局样式
+   山东大学场馆预约管理系统 — 全局样式
    设计体系：统一色板 / 文本层级 / 圆角 / 阴影 / 字号梯度
    ============================================================ */
 :root {
@@ -2926,5 +2926,33 @@ dialog::backdrop {
     min-height: 34px;
     padding: 6px 10px;
     font-size: 12px;
+  }
+}
+
+.campus-filter {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  white-space: nowrap;
+  font-size: 14px;
+}
+.campus-filter select {
+  min-width: 140px;
+  border: 1px solid var(--border, #dce3dc);
+  border-radius: 8px;
+  background: white;
+  padding: 11px 12px;
+  color: inherit;
+  font: inherit;
+}
+.venue-filters {
+  flex-wrap: wrap;
+}
+@media (max-width: 680px) {
+  .campus-filter {
+    width: 100%;
+  }
+  .campus-filter select {
+    flex: 1;
   }
 }

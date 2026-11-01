@@ -23,6 +23,7 @@ public class VenueController {
     }
     private Venue save(Venue v, ApiModels.VenueRequest r) {
         if (r.closeHour() <= r.openHour()) throw new ResponseStatusException(BAD_REQUEST, "关闭时间必须晚于开放时间");
+        v.campus = r.campus();
         v.name = r.name().trim(); v.category = r.category(); v.location = r.location().trim(); v.description = r.description().trim();
         v.capacity = r.capacity(); v.openHour = r.openHour(); v.closeHour = r.closeHour(); v.enabled = r.enabled(); v.theme = r.theme();
         return venues.save(v);

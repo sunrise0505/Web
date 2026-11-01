@@ -23,15 +23,12 @@ public class SeedData implements CommandLineRunner {
             users.save(new AppUser("student", encoder.encode(env.getProperty("STUDENT_PASSWORD", "Student123!")), "林同学", "STUDENT"));
             users.save(new AppUser("student2", encoder.encode(env.getProperty("STUDENT_PASSWORD", "Student123!")), "陈同学", "STUDENT"));
         }
-        if (venues.count() > 0) return;
-        List<Venue> items = venues.saveAll(List.of(
-            new Venue("综合体育馆 · 羽毛球馆", "羽毛球", "中心校区 · 体育馆 1 层", "标准室内羽毛球场，运动木地板与专业照明。请穿着室内运动鞋入场，自备球拍。", 4, 8, 22, "court"),
-            new Venue("东区篮球馆", "篮球", "中心校区 · 东区运动中心", "全场木地板篮球场，提供计分牌与更衣空间。适合班级友谊赛和日常训练。", 20, 8, 22, "court"),
-            new Venue("恒温游泳馆", "游泳", "中心校区 · 游泳中心", "室内恒温泳池，配备救生人员与独立更衣室。请携带泳帽、泳镜与有效校园证件。", 30, 9, 21, "pool"),
-            new Venue("活力健身房", "健身", "中心校区 · 体育馆 2 层", "有氧与力量训练区域，适合个人训练和小组健身。器械使用后请及时归位。", 12, 8, 22, "studio"),
-            new Venue("南区足球场", "足球", "中心校区 · 南区田径场", "室外标准足球场，夜间照明开放。遇恶劣天气可能临时关闭，请留意场馆状态。", 22, 8, 21, "field"),
-            new Venue("西区网球场", "网球", "中心校区 · 西区运动场", "室外硬地网球场，适合单打与双打。请自备球具，按照预约时段使用。", 4, 8, 21, "field")
-        ));
+        boolean existing = venues.count() > 0;
+        var current = venues.findAll();
+        var missing = VenueCatalog.items().stream().filter(v -> current.stream()
+                .noneMatch(old -> old.campus.equals(v.campus) && old.name.equals(v.name))).toList();
+        List<Venue> items = venues.saveAll(missing);
+        if (existing) return; // 已有库只补齐目录，保留场馆配置、账号及预约。
         // 历史演示记录只在本地 demo profile 下生成，不写入课程数据库。
         boolean demo = env.getActiveProfiles().length == 0 || Arrays.asList(env.getActiveProfiles()).contains("demo");
         if (!demo) return;

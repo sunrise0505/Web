@@ -3,7 +3,7 @@ import { ref, onMounted, watch, computed } from 'vue'
 import { X, MapPin, Users, Clock3, Check, ArrowRight } from 'lucide-vue-next'
 import VenueArt from './VenueArt.vue'
 import type { Venue, Slot } from '../types'
-import { hourText, localDate, bookingPurposes } from '../types'
+import { hourText, localDate, bookingPurposes, venueLocation } from '../types'
 import { request } from '../api'
 import { notify, user } from '../state'
 const canBook = computed(() => user.value?.role === 'STUDENT')
@@ -109,7 +109,7 @@ const slotLabel = { AVAILABLE: '可预约', BUSY: '已占用', EXPIRED: '已过�
       <div class="modal-art"><VenueArt :theme="venue.theme" :category="venue.category" /></div>
       <div>
         <h3>{{ venue.name }}</h3>
-        <p><MapPin :size="13" />{{ venue.location }}</p>
+        <p><MapPin :size="13" />{{ venueLocation(venue) }}</p>
         <p>
           <Users :size="13" />最多 {{ venue.capacity }} 人<span>·</span><Clock3 :size="13" />{{
             hourText(venue.openHour)

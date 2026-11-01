@@ -2,7 +2,7 @@
 import { ref, onMounted } from 'vue'
 import { Plus, Pencil, X, Building2 } from 'lucide-vue-next'
 import type { Venue } from '../types'
-import { categories, hourText } from '../types'
+import { categories, hourText, campuses, venueLocation } from '../types'
 import { request } from '../api'
 import { notify } from '../state'
 const venues = ref<Venue[]>([]),
@@ -14,6 +14,7 @@ const venues = ref<Venue[]>([]),
   formError = ref('')
 const blank = () => ({
   name: '',
+  campus: '中心校区',
   category: '羽毛球',
   location: '',
   description: '',
@@ -95,7 +96,7 @@ async function save() {
           <tr v-for="v in venues" :key="v.id">
             <td>
               <strong>{{ v.name }}</strong
-              ><small>{{ v.location }}</small>
+              ><small>{{ venueLocation(v) }}</small>
             </td>
             <td>{{ v.category }}</td>
             <td>{{ v.capacity }} 人</td>
@@ -125,7 +126,12 @@ async function save() {
     </div>
     <form @submit.prevent="save">
       <label class="form-field"
-        >场馆名称<input v-model="form.name" required maxlength="60" placeholder="例如：东区羽毛球馆"
+        >所属校区<select v-model="form.campus" required>
+          <option v-for="c in campuses" :key="c">{{ c }}</option>
+        </select></label
+      >
+      <label class="form-field"
+        >场馆名称<input v-model="form.name" required maxlength="60" placeholder="例如：兴隆山校区羽毛球场"
       /></label>
       <div class="form-two-columns">
         <label class="form-field"

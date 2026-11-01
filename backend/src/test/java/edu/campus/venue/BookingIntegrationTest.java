@@ -107,6 +107,25 @@ class BookingIntegrationTest {
         assertTrue(service.list("student2").isEmpty());
         assertEquals(1, service.list("admin").size());
     }
+    @Test void adminCanMaintainCampusAndInvalidCampusCannotOverwriteVenue() throws Exception {
+        Map<String, Object> form = new HashMap<>(Map.of("campus", "兴隆山校区", "name", "校区测试场馆", "category", "篮球",
+                "location", "风雨操场", "description", "测试用预约单元", "capacity", 20, "openHour", 8,
+                "closeHour", 22, "enabled", true, "theme", "court"));
+        var created = mvc.perform(post("/api/admin/venues").with(user("admin").roles("ADMIN")).with(csrf())
+                .contentType("application/json").content(json.writeValueAsString(form)))
+                .andExpect(status().isCreated()).andExpect(jsonPath("$.campus").value("兴隆山校区")).andReturn();
+        long id = json.readTree(created.getResponse().getContentAsString()).get("id").asLong();
+        form.put("campus", "无效校区");
+        mvc.perform(put("/api/admin/venues/" + id).with(user("admin").roles("ADMIN")).with(csrf())
+                .contentType("application/json").content(json.writeValueAsString(form))).andExpect(status().isBadRequest());
+        assertEquals("兴隆山校区", venues.findById(id).orElseThrow().campus);
+        form.put("campus", "青岛校区");
+        mvc.perform(put("/api/admin/venues/" + id).with(user("admin").roles("ADMIN")).with(csrf())
+                .contentType("application/json").content(json.writeValueAsString(form)))
+                .andExpect(status().isOk()).andExpect(jsonPath("$.campus").value("青岛校区"));
+        mvc.perform(get("/api/venues").with(user("student").roles("STUDENT")))
+                .andExpect(status().isOk()).andExpect(jsonPath("$[?(@.id == " + id + ")].campus").value("青岛校区"));
+    }
     @Test void validatesDateHoursAndCapacity() {
         assertEquals(400, assertThrows(ResponseStatusException.class, () -> service.create("student", requestAt(23))).getStatusCode().value());
         assertThrows(ResponseStatusException.class, () -> service.create("student", new ApiModels.BookingRequest(venue.id, tomorrow.plusDays(15), 18, 1, 2, "训练")));

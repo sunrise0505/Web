@@ -47,6 +47,6 @@ window.addEventListener('session-expired', () => {
 })
 router.afterEach((to) => {
   const title = to.path === '/venues' && user.value?.role === 'ADMIN' ? '场馆浏览' : to.meta.title || '登录'
-  document.title = `${title} - 校园场馆预约管理系统`
+  document.title = `${title} - 山东大学场馆预约管理系统`
 })
 export default router

@@ -8,6 +8,7 @@ export interface Venue {
   id: number
   name: string
   category: string
+  campus: string
   location: string
   description: string
   capacity: number
@@ -64,3 +65,16 @@ export function localDate(date = new Date()) {
 }
 export const categories = ['羽毛球', '篮球', '游泳', '健身', '足球', '网球']
 export const bookingPurposes = ['日常锻炼', '专项训练', '班级活动', '社团活动', '比赛活动', '课程教学']
+
+export const campuses = [
+  '中心校区',
+  '洪家楼校区',
+  '趵突泉校区',
+  '千佛山校区',
+  '兴隆山校区',
+  '软件园校区',
+  '威海校区',
+  '青岛校区',
+]
+export const venueLocation = (v: Venue) =>
+  v.location.startsWith(v.campus) ? v.location : `${v.campus} · ${v.location}`

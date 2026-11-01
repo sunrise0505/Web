@@ -31,7 +31,7 @@ async function submit() {
     <section class="login-form-side">
       <div class="login-form-wrap">
         <div class="login-logo"><Building2 :size="26" /></div>
-        <h1>校园场馆预约管理系统</h1>
+        <h1>山东大学场馆预约管理系统</h1>
         <div class="login-role-switch">
           <button type="button" :class="{ selected: username === 'admin' }" @click="choose('admin')">
             <ShieldCheck :size="17" />管理员</button

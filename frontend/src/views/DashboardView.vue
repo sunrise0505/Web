@@ -9,6 +9,7 @@ import {
   Activity,
   MapPin,
 } from 'lucide-vue-next'
+import { venueLocation } from '../types'
 import VenueArt from '../components/VenueArt.vue'
 import BookingTable from '../components/BookingTable.vue'
 import { request } from '../api'
@@ -147,7 +148,7 @@ const stats = computed(() => [
           ><div class="quick-art"><VenueArt :theme="v.theme" :category="v.category" /></div>
           <div class="quick-info">
             <strong>{{ v.name }}</strong
-            ><span><MapPin :size="12" />{{ v.location }}</span>
+            ><span><MapPin :size="12" />{{ venueLocation(v) }}</span>
           </div>
           <ArrowUpRight :size="17" class="muted" /></RouterLink
         ><RouterLink to="/venues" class="quick-all"

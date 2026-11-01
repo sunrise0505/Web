@@ -5,12 +5,13 @@ import { Search, MapPin, Users, Clock3, ArrowUpRight, SlidersHorizontal } from '
 import VenueArt from '../components/VenueArt.vue'
 import BookingModal from '../components/BookingModal.vue'
 import type { Venue } from '../types'
-import { categories, hourText } from '../types'
+import { categories, hourText, campuses, venueLocation } from '../types'
 import { request } from '../api'
 import { user } from '../state'
 const venues = ref<Venue[]>([]),
   query = ref(''),
   category = ref('全部场馆'),
+  campus = ref('全部校区'),
   selected = ref<Venue | null>(null),
   loading = ref(true),
   error = ref(''),
@@ -19,9 +20,10 @@ const venues = ref<Venue[]>([]),
 const filtered = computed(() =>
   venues.value.filter(
     (v) =>
+      (campus.value === '全部校区' || v.campus === campus.value) &&
       (category.value === '全部场馆' || v.category === category.value) &&
       (!onlyOpen.value || v.enabled) &&
-      `${v.name}${v.location}${v.category}`.includes(query.value.trim()),
+      `${v.name}${v.campus}${v.location}${v.category}`.includes(query.value.trim()),
   ),
 )
 async function load() {
@@ -48,6 +50,12 @@ onMounted(load)
     <span class="venue-total">共 {{ venues.length }} 个场馆</span>
   </div>
   <div class="venue-filters">
+    <label class="campus-filter"
+      >校区<select v-model="campus" aria-label="筛选校区">
+        <option>全部校区</option>
+        <option v-for="c in campuses" :key="c">{{ c }}</option>
+      </select></label
+    >
     <div class="search-field">
       <Search :size="18" /><input v-model="query" aria-label="搜索场馆" placeholder="搜索场馆名称或位置…" />
     </div>
@@ -86,7 +94,7 @@ onMounted(load)
             ><i></i>{{ v.enabled ? '开放预约' : '暂未开放' }}</span
           >
         </div>
-        <p class="venue-location"><MapPin :size="14" />{{ v.location }}</p>
+        <p class="venue-location"><MapPin :size="14" />{{ venueLocation(v) }}</p>
         <p class="card-description">{{ v.description }}</p>
         <div class="venue-meta">
           <span><Users :size="14" />{{ v.capacity }} 人以内</span
