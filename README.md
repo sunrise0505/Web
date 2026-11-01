@@ -6,11 +6,11 @@
 
 ## 当前运行状态
 
-- 本轮修改仅在本地实施，未修改学校数据库，未上传学校提交网站，也未自动更新 GitHub。
-- 本机 `.env` 已切换为 `demo`，预览使用独立本地 H2 数据库。之前学校第 11 组 MySQL 的数据保留。
-- 新增 `venue.campus` 校区字段。学校库尚未执行本轮迁移，不能直接用新版代码连接旧结构；准备好后再按下文升级。
+- 2026-11-01 已按用户要求升级学校第 11 组 MySQL，新增校区字段并补齐多校区场馆；未上传学校提交网站，也未自动更新 GitHub。
+- 本机 `.env` 当前使用 `mysql`，日常预览读写学校远程数据库；旧 H2 演示数据仍保存在本机，未导入学校库。独立演示包仍使用 H2。
+- 学校库已具备 `venue.campus` 和 `booking.duration_hours` 字段。本轮升级前已备份，并核对已有账号、预约及场馆配置未被覆盖。
 - 校区目录包含 14 个演示预约单元，覆盖中心、洪家楼、趵突泉、千佛山、兴隆山、软件园、威海、青岛八个校区。软件园羽毛球场沿用中心校区羽毛球区的介绍、容量、时间和配色。
-- 本地旧库会补充缺少的目录场馆，保留原有场馆配置及预约。因此升级后的总数可能超过 14，不会清空旧数据。
+- 学校库当前有 20 个场馆：原有 6 条示例场馆保留，追加 14 个多校区预约单元。新空库的初始目录为 14 个；本地旧库同样只补缺失项，不清空旧数据。
 
 ## 主要功能
 
@@ -59,7 +59,7 @@ npm --prefix frontend ci
 npm --prefix frontend run dev
 ```
 
-打开 <http://localhost:3000>。后端端口为 `22222`。启动脚本读取根目录 `.env`；本轮建议使用 `SPRING_PROFILES_ACTIVE=demo`。未配置 `.env` 时开发默认也使用 demo。H2 数据保存在 `backend/data/`，与学校库独立。
+打开 <http://localhost:3000>。后端端口为 `22222`。启动脚本读取根目录 `.env`；当前本机配置为 `SPRING_PROFILES_ACTIVE=mysql`，需要学校库可联网。队友仅本地演示时可设置为 `demo`；未配置 `.env` 时开发默认使用 demo。H2 数据保存在 `backend/data/`，与学校库独立。
 
 | 身份 | 账号 | 初始密码 |
 | --- | --- | --- |
@@ -78,9 +78,9 @@ npm --prefix frontend run dev
 已有旧库不能重新初始化或删表，应先备份、检查列结构，再按需升级：
 
 1. 缺少 `booking.duration_hours` 才执行 `database/migrations/001_booking_duration.sql`。学校第 11 组此前已执行这一项，不要重复执行。
-2. 缺少 `venue.campus` 才执行 `database/migrations/002_venue_campus.sql`。本轮未在学校库执行。
-3. 执行 `database/seed-sdu-venues.sql` 补充多校区演示预约单元，按校区与名称跳过已有项，不覆盖原配置。
-4. 将本地 `.env` 切换为 `mysql` 后启动并验证。MySQL 模式使用 `ddl-auto: validate`，不会自动修改表结构。
+2. 缺少 `venue.campus` 才执行 `database/migrations/002_venue_campus.sql`。学校第 11 组已完成，不要重复执行。
+3. 执行 `database/seed-sdu-venues.sql` 补充多校区演示预约单元，按校区与名称跳过已有项，不覆盖原配置。学校第 11 组已完成补充。
+4. 加载数据库连接配置，使用 `mysql` 启动并验证。当前本机已完成该切换。MySQL 模式使用 `ddl-auto: validate`，不会自动修改表结构。
 
 学校数据库接入不等于将应用部署到学校服务器；目前仍未提交学校网站。
 

@@ -1,22 +1,27 @@
 # 手动更新 GitHub 上的项目
 
-本轮只修改本地，没有自动更新 https://github.com/sunrise0505/Web 。
+仓库：https://github.com/sunrise0505/Web 。用户已确认此前的 29 个多校区更新文件上传完成。本轮学校数据库接入后，只需补充 7 个发生变化的文件。
 
-## 本轮网页上传
+## 本次上传
 
-1. 打开项目的 `artifacts/github-update` 文件夹。这是与上次源码上传副本比较后整理出的本轮变化，只有需要新增或覆盖的文件；没有 `.env`、依赖、JAR、本地数据库或真实密码。
-2. 打开 GitHub 仓库，在 Code 页确认分支为 `main`，选择 Add file → Upload files。
-3. 选中 `github-update` 里面的全部内容，拖到网页上传区域。拖入的是内部的 `frontend`、`backend`、`database`、`docs` 等目录及 `README.md`，不要把最外层 `github-update` 文件夹拖进去。
-4. 保留目录结构。上传清单应显示如 `frontend/src/views/VenuesView.vue`、`database/migrations/002_venue_campus.sql`，并直接覆盖仓库原路径。不要上传 ZIP。
-5. 填写说明“更名为山东大学场馆预约系统，增加多校区目录与筛选”，点击 Commit changes，并确认提交。
-6. 返回仓库首页，确认 README 标题已变化，且能找到新的校区迁移文件和场馆目录类。
+`artifacts/github-update` 已精简，仅包含：
 
-更新文件夹会继续包含自最初上传版本以来的累计变化，直到你确认某一版本已经上传后再更新比较基准。如果上一次校区版本尚未上传，直接使用当前文件夹即可；若已上传，相同路径更新不会多出副本。此次也补充了软件园、威海场馆及老师演示包的生成脚本。
+- `README.md`
+- `database/migrations/002_venue_campus.sql`
+- `docs/系统设计.md`
+- `docs/课程要求核对.md`
+- `docs/GitHub更新说明.md`
+- `docs/场馆资料说明.md`
+- `docs/老师运行说明.md`
 
-本轮没有修改上次补齐的 `.gitignore` 和 `.env.example`，不需要再用文本副本改名。网页没有这些变更之前，队友下载到的仍是上一个版本。
+打开仓库 Code 页，选择 Add file → Upload files，把 `github-update` 里面的内容拖入上传区域，保持原有目录结构，不要拖入最外层 `github-update` 文件夹。填写说明“更新学校数据库接入状态与运行说明”，点击 Commit changes。
 
-## 本地验证与数据库
+相同路径会更新原文件并保留提交历史，不会生成第二份代码。若上传文件夹的最外层目录，才可能产生不需要的额外目录。GitHub 页面允许查看提交差异，上传前可检查这些路径。
 
-队友拉取新版后，可用 demo 模式在本机验证。学校库仍是旧结构，不能直接让新版使用 mysql；需要先备份、执行缺失的校区迁移，再补充场馆数据，详见 README。
+## 数据库与协作
 
-GitHub 保存源码，不会自动运行 Spring Boot 或自动升级学校数据库。后续多人协作建议各自使用 Git 分支并通过 Pull Request 合并；网页上传适用于此次少量文件更新。上传前先确认队友没有改动相同文件，避免覆盖对方更新。
+学校第 11 组库已完成校区字段迁移并补充场馆，当前本机使用 mysql。队友连接学校库需单独配置实际密码；选择 demo 则使用独立本地库。已经执行过的数据库迁移不要重复执行。
+
+不要上传 `.env`、数据库备份、JAR、本地 data、node_modules 或 dist。GitHub 上的源码更新不会自动修改学校数据库，也不代表已向学校网站提交作业。
+
+后续多人开发建议使用 Git 分支和 Pull Request 合并；每次上传前与上一次已提交版本比较，只上传有变化的文件。
