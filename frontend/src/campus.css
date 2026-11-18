@@ -1,0 +1,813 @@
+/* Campus service pages */
+:root {
+  --green: #781f2d;
+  --green-strong: #5b1624;
+  --green-soft: #f2e6e7;
+  --green-faint: #fcf5f4;
+  --ink: #272023;
+  --ink-2: #554a4c;
+  --muted: #635a58;
+  --faint: #746c69;
+  --line: #e2dad4;
+  --line-strong: #cdbeb8;
+  --bg: #f8f6f3;
+  --surface: #fffdfc;
+  --shadow-primary: none;
+  --campus-tint: #f0eae5;
+  --campus-open: #286048;
+  --campus-focus: #a44c5a;
+  font-family:
+    "Noto Sans SC", "PingFang SC", "Microsoft YaHei", Inter, sans-serif;
+  color: var(--ink);
+  background: var(--bg);
+}
+
+button:focus-visible,
+a:focus-visible {
+  outline-color: var(--campus-focus);
+}
+input:focus,
+select:focus,
+textarea:focus {
+  border-color: var(--campus-focus) !important;
+  box-shadow: 0 0 0 3px #781f2d12;
+}
+
+.campus-container {
+  width: min(90%, 1296px);
+  margin-inline: auto;
+}
+.campus-header {
+  border-top: 4px solid var(--green);
+  border-bottom: 1px solid var(--line);
+  background: #f5f5f5;
+}
+.campus-header-inner,
+.campus-brand,
+.campus-account {
+  display: flex;
+  align-items: center;
+}
+.campus-header-inner {
+  min-height: 72px;
+  gap: 16px;
+}
+.campus-brand {
+  gap: 12px;
+  color: var(--ink);
+}
+.campus-brand img,
+.login-emblem {
+  display: block;
+  border-radius: 50%;
+  object-fit: contain;
+}
+.campus-brand strong {
+  color: var(--green);
+  font-size: 23px;
+  letter-spacing: 0.03em;
+  white-space: nowrap;
+}
+.campus-brand span {
+  border-inline-start: 1px solid var(--line-strong);
+  padding-inline-start: 14px;
+  font-size: 17px;
+  font-weight: 700;
+}
+.campus-demo {
+  font-size: 12px;
+  color: var(--muted);
+}
+.campus-account {
+  margin-inline-start: auto;
+  gap: 9px;
+  white-space: nowrap;
+  color: var(--ink);
+}
+.campus-account time {
+  margin-inline-end: 5px;
+  padding-inline-end: 15px;
+  border-inline-end: 1px solid var(--line);
+  color: var(--muted);
+}
+.campus-avatar {
+  display: grid;
+  width: 32px;
+  height: 32px;
+  place-items: center;
+  border-radius: 50%;
+  background: var(--green-soft);
+  color: var(--green);
+  font-weight: 700;
+}
+.campus-logout {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  min-height: 38px;
+  padding: 5px 9px;
+  border: 0;
+  background: transparent;
+  color: var(--green);
+}
+.campus-logout:hover {
+  background: var(--green-soft);
+  border-radius: 5px;
+}
+.campus-nav {
+  background: var(--surface);
+  border-bottom: 1px solid var(--line);
+}
+.campus-nav-links {
+  display: flex;
+  gap: clamp(24px, 4vw, 64px);
+  overflow-x: auto;
+}
+.campus-nav a {
+  display: grid;
+  min-height: 51px;
+  place-items: center;
+  border-bottom: 3px solid transparent;
+  white-space: nowrap;
+  color: var(--muted);
+  font-size: 15px;
+}
+.campus-nav a:focus-visible {
+  outline-offset: -4px;
+}
+.campus-nav a[aria-current="page"] {
+  border-bottom-color: var(--green);
+  color: var(--green);
+  font-weight: 700;
+}
+.campus-page {
+  padding-block: 27px 72px;
+}
+.campus-page .page-heading {
+  min-height: 64px;
+  margin-bottom: 34px;
+}
+.campus-page .page-heading h1 {
+  font-size: clamp(28px, 3.1vw, 36px);
+  line-height: 1.25;
+}
+.campus-page h2 {
+  font-size: 21px;
+  line-height: 1.35;
+}
+.campus-page .panel {
+  border-color: var(--line);
+  box-shadow: none;
+}
+.campus-page .button,
+.login-page .button {
+  border-radius: 5px;
+}
+.campus-page .button:hover {
+  transform: none;
+}
+.login-emblem {
+  margin-block-end: 16px;
+}
+.login-page .login-role-switch button.selected {
+  background: var(--surface);
+  color: var(--green);
+}
+.status-badge.APPROVED,
+.status-badge.CHECKED_IN {
+  background: #e9f0e9;
+  color: var(--campus-open);
+}
+.next-time-row .status-badge,
+.pending-list .status-badge {
+  padding: 4px 10px;
+  border-radius: 4px;
+  font-size: 12px;
+}
+.status-badge.PENDING {
+  background: #f6edd9;
+  color: #805619;
+}
+.status-badge.NO_SHOW,
+.status-badge.CANCELLED,
+.status-badge.EXPIRED {
+  background: #efeae5;
+  color: var(--muted);
+}
+
+.workbench-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 2fr) minmax(235px, 1fr);
+  gap: clamp(24px, 4vw, 52px);
+}
+.next-booking {
+  display: grid;
+  grid-template-columns: minmax(100px, 17%) minmax(0, 1fr);
+  margin-top: 15px;
+  background: var(--surface);
+  border: 1px solid var(--line);
+}
+.next-date {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  justify-content: center;
+  padding: 20px clamp(13px, 2vw, 25px);
+  color: #f2dce0;
+  background: var(--green);
+}
+.next-date::before {
+  display: block;
+  width: 26px;
+  height: 2px;
+  margin-bottom: 15px;
+  background: #d3a879;
+  content: "";
+}
+.next-date strong {
+  margin-block: 4px 8px;
+  color: #fff;
+  font:
+    450 clamp(42px, 5.2vw, 66px) / 1.2 Inter,
+    "Segoe UI",
+    sans-serif;
+  font-variant-numeric: tabular-nums;
+}
+.next-details {
+  min-width: 0;
+  padding: 20px clamp(16px, 2vw, 27px);
+}
+.next-time-row,
+.next-actions,
+.workbench-section-title,
+.workbench-history-heading {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.next-time-row,
+.workbench-history-heading {
+  justify-content: space-between;
+}
+.next-time {
+  color: var(--green);
+  font:
+    700 clamp(23px, 4.1vw, 42px) / 1.15 Inter,
+    "Segoe UI",
+    sans-serif;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+.next-details h3 {
+  margin-block: 10px 4px;
+  font-size: clamp(16px, 1.8vw, 22px);
+}
+.next-details p,
+.pending-list p,
+.pending-expiry {
+  color: var(--muted);
+  font-size: 14px;
+}
+.next-actions {
+  justify-content: space-between;
+  margin-top: 13px;
+  padding-top: 10px;
+  min-height: 47px;
+  border-top: 1px solid var(--line);
+}
+.check-in-note,
+.workbench-more {
+  color: var(--green);
+  font-weight: 700;
+}
+.check-in-note::before {
+  display: inline-block;
+  width: 6px;
+  height: 6px;
+  margin-inline-end: 8px;
+  vertical-align: 0.2em;
+  border-radius: 50%;
+  background: currentColor;
+  content: "";
+}
+.plain-action {
+  padding: 6px 0 6px 4px;
+  border: 0;
+  background: transparent;
+  color: var(--ink-2);
+}
+.plain-action:hover,
+.workbench-more:hover {
+  text-decoration: underline;
+}
+.workbench-pending {
+  margin-top: 39px;
+}
+.workbench-empty {
+  margin-top: 15px;
+  padding-block: 20px;
+  border-block: 1px solid var(--line);
+  color: var(--muted);
+}
+.pending-list {
+  margin: 12px 0 0;
+  padding: 0;
+  border-top: 1px solid var(--line);
+  list-style: none;
+}
+.pending-list li {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) max-content auto;
+  align-items: center;
+  gap: 14px;
+  padding-block: 15px;
+  border-bottom: 1px solid var(--line);
+}
+.pending-list strong {
+  font-size: 15px;
+}
+.pending-list p {
+  margin-top: 4px;
+}
+.pending-list .status-badge {
+  margin-inline-end: 7px;
+}
+.workbench-rules {
+  border-inline-start: 1px solid var(--line);
+  padding-inline-start: clamp(18px, 3vw, 35px);
+}
+.workbench-rules dl {
+  margin: 15px 0 0;
+  border-top: 1px solid var(--line);
+}
+.workbench-rules dl div {
+  padding-block: 18px;
+  border-bottom: 1px solid var(--line);
+}
+.workbench-rules dt {
+  color: var(--muted);
+}
+.workbench-rules dd {
+  margin: 6px 0 0;
+  font-size: 16px;
+}
+.workbench-rules .bookable-dates {
+  font-size: 19px;
+  font-weight: 700;
+}
+.workbench-more {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+.workbench-pending .workbench-more {
+  margin-top: 12px;
+}
+.workbench-history-heading {
+  margin-block: 37px 16px;
+}
+.campus-page .data-table th {
+  background: var(--campus-tint);
+  color: var(--ink-2);
+  font-size: 13px;
+}
+.campus-page .data-table td {
+  border-bottom-color: var(--line);
+  font-size: 14px;
+}
+.campus-page .data-table td small {
+  color: var(--muted);
+  font-size: 12px;
+}
+.workbench-admin dl {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px 32px;
+  margin-block: 14px 0;
+  padding-block: 16px;
+  border-block: 1px solid var(--line);
+}
+.workbench-admin dl div {
+  display: flex;
+  align-items: baseline;
+  gap: 9px;
+}
+.workbench-admin dd {
+  margin: 0;
+  color: var(--green);
+  font-weight: 700;
+}
+
+.directory-heading {
+  gap: 20px;
+}
+.directory-search {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  width: min(100%, 380px);
+  padding: 0 12px;
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: 5px;
+  color: var(--muted);
+}
+.directory-search:focus-within {
+  border-color: var(--campus-focus);
+}
+.directory-search input {
+  width: 100%;
+  min-height: 41px;
+  padding: 7px 0;
+  border: 0;
+  outline: 0;
+  background: none;
+  color: var(--ink);
+}
+.directory-search input:focus {
+  box-shadow: none;
+}
+.directory {
+  display: grid;
+  grid-template-columns: clamp(164px, 18%, 237px) minmax(0, 1fr);
+  column-gap: clamp(20px, 2.3vw, 32px);
+}
+.directory-filters {
+  border-inline-end: 1px solid var(--line);
+  padding-inline-end: clamp(16px, 2vw, 28px);
+}
+.directory-filters h2 {
+  font-size: 18px;
+}
+.directory-campus {
+  display: grid;
+  margin-top: 21px;
+  gap: 7px;
+  color: var(--muted);
+}
+.directory-campus select {
+  width: 100%;
+  min-height: 42px;
+  padding-inline: 10px;
+  color: var(--ink);
+  border: 1px solid var(--line);
+  border-radius: 5px;
+  background: var(--surface);
+}
+.directory-sports {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  margin: 24px 0 0;
+  padding: 0;
+  border: 0;
+}
+.directory-sports legend {
+  margin-bottom: 8px;
+  color: var(--muted);
+}
+.directory-sports label,
+.directory-open-filter {
+  position: relative;
+  display: flex;
+  align-items: center;
+  min-height: 36px;
+  cursor: pointer;
+}
+.directory-sports label {
+  padding: 5px 10px;
+  border-inline-start: 3px solid transparent;
+}
+.directory-sports label:hover {
+  background: var(--green-faint);
+}
+.directory-sports label.active {
+  border-inline-start-color: var(--green);
+  background: var(--green-soft);
+  color: var(--green);
+  font-weight: 700;
+}
+.directory-sports label:focus-within,
+.directory-open-filter:focus-within {
+  outline: 2px solid var(--campus-focus);
+  outline-offset: 2px;
+}
+.directory-sports input,
+.directory-open-filter input {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  opacity: 0;
+  margin: 0;
+}
+.directory-open-filter {
+  gap: 9px;
+  margin-top: 17px;
+  padding-top: 13px;
+  border-top: 1px solid var(--line);
+}
+.directory-switch {
+  position: relative;
+  flex: 0 0 35px;
+  height: 20px;
+  border-radius: 12px;
+  background: var(--line-strong);
+}
+.directory-switch::after {
+  position: absolute;
+  inset: 3px auto 3px 3px;
+  width: 14px;
+  border-radius: 50%;
+  background: #fff;
+  content: "";
+}
+.directory-open-filter input:checked + .directory-switch {
+  background: var(--campus-open);
+}
+.directory-open-filter input:checked + .directory-switch::after {
+  transform: translateX(15px);
+}
+.directory-results-title {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 12px;
+  margin-bottom: 13px;
+}
+.directory-row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 110px 90px 94px max-content;
+  align-items: center;
+  gap: clamp(9px, 1.4vw, 22px);
+  padding-inline: 14px;
+}
+.directory-columns {
+  background: var(--campus-tint);
+  color: var(--ink-2);
+  min-height: 42px;
+  font-size: 13px;
+  font-weight: 700;
+  grid-template-columns: minmax(0, 1fr) 110px 90px 94px 108px;
+}
+.directory-list {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.directory-list .directory-row {
+  min-height: 94px;
+  padding-block: 15px;
+  border-bottom: 1px solid var(--line);
+}
+.directory-list .directory-row:hover {
+  background: var(--surface);
+}
+.directory-name {
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+.directory-name strong {
+  display: block;
+  margin-bottom: 4px;
+  font-size: 16px;
+}
+.directory-name span {
+  color: var(--muted);
+  font-size: 13px;
+}
+.directory-hours,
+.directory-capacity {
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+.directory-status {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  color: var(--muted);
+  font-size: 13px;
+  white-space: nowrap;
+}
+.directory-status::before {
+  width: 7px;
+  height: 7px;
+  flex: 0 0 auto;
+  border-radius: 50%;
+  background: currentColor;
+  content: "";
+}
+.directory-status.is-open {
+  color: var(--campus-open);
+}
+.directory-action {
+  display: inline-flex;
+  justify-content: center;
+  align-items: center;
+  gap: 4px;
+  width: 108px;
+  min-height: 38px;
+  padding-inline: 7px;
+  border: 1px solid #b98187;
+  border-radius: 5px;
+  color: var(--green);
+  background: var(--surface);
+  font-weight: 700;
+  white-space: nowrap;
+}
+.directory-action:hover:not(:disabled) {
+  background: var(--green-soft);
+}
+.directory-action:disabled {
+  color: var(--muted);
+  border-color: var(--line);
+  background: var(--bg);
+  opacity: 1;
+}
+.booking-dialog .modal-venue {
+  padding: 12px 15px;
+  border: 1px solid var(--line);
+  background: var(--surface);
+}
+.booking-dialog .modal-venue p,
+.booking-dialog .venue-description,
+.booking-dialog .field-heading {
+  color: var(--muted);
+}
+.booking-dialog .slot.selected {
+  background: var(--green-soft);
+  border-color: var(--green);
+  color: var(--green);
+}
+.booking-dialog .slot.selected span {
+  color: var(--green);
+}
+
+@media (max-width: 1060px) {
+  .directory-row,
+  .directory-columns {
+    grid-template-columns: minmax(0, 1fr) 98px 67px 79px 108px;
+    gap: 9px;
+  }
+}
+
+@media (max-width: 820px) {
+  .workbench-grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .workbench-rules {
+    border: 0;
+    padding: 0;
+  }
+  .workbench-rules dl {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 14px;
+  }
+  .directory {
+    grid-template-columns: minmax(0, 1fr);
+    row-gap: 22px;
+  }
+  .directory-filters {
+    border: 0;
+    padding: 0;
+  }
+  .directory-campus {
+    max-width: 230px;
+    margin-top: 13px;
+  }
+  .directory-sports {
+    flex-direction: row;
+    flex-wrap: wrap;
+    gap: 4px;
+    margin-top: 14px;
+  }
+  .directory-sports label {
+    border-inline-start: 0;
+    border-bottom: 2px solid transparent;
+  }
+  .directory-sports label.active {
+    border-bottom-color: var(--green);
+  }
+  .directory-open-filter {
+    padding: 0;
+    border: 0;
+    margin-top: 8px;
+  }
+}
+
+@media (max-width: 580px) {
+  .campus-container {
+    width: calc(100% - 28px);
+  }
+  .campus-header-inner {
+    min-height: 62px;
+    gap: 8px;
+  }
+  .campus-brand {
+    gap: 7px;
+  }
+  .campus-brand img {
+    width: 32px;
+    height: 32px;
+  }
+  .campus-brand strong {
+    font-size: 17px;
+  }
+  .campus-brand span {
+    font-size: 13px;
+    padding-inline-start: 7px;
+  }
+  .campus-account time,
+  .campus-user,
+  .campus-logout span {
+    display: none;
+  }
+  .campus-nav a {
+    min-height: 45px;
+    font-size: 14px;
+  }
+  .campus-page {
+    padding-block-start: 16px;
+  }
+  .campus-page .page-heading {
+    margin-bottom: 20px;
+  }
+  .next-booking {
+    grid-template-columns: 65px minmax(0, 1fr);
+  }
+  .next-date {
+    padding: 12px 9px;
+    font-size: 12px;
+  }
+  .next-date strong {
+    font-size: 38px;
+  }
+  .next-details {
+    padding: 13px 11px;
+  }
+  .next-time-row {
+    flex-wrap: wrap;
+    gap: 7px;
+  }
+  .next-actions {
+    flex-wrap: wrap;
+  }
+  .pending-list li {
+    grid-template-columns: minmax(0, 1fr) auto;
+    gap: 5px 12px;
+  }
+  .pending-expiry {
+    grid-row: 2;
+  }
+  .pending-list .status-badge {
+    grid-column: 2;
+    grid-row: 1;
+  }
+  .workbench-rules dl {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 0;
+  }
+  .directory-heading {
+    align-items: stretch;
+    flex-direction: column;
+    gap: 14px;
+  }
+  .directory-search {
+    width: 100%;
+  }
+  .directory-columns {
+    display: none;
+  }
+  .directory-list {
+    border-top: 1px solid var(--line);
+  }
+  .directory-list .directory-row {
+    grid-template-columns: auto minmax(0, 1fr) auto;
+    column-gap: 8px;
+    padding-inline: 0;
+  }
+  .directory-name {
+    grid-column: 1 / -1;
+  }
+  .directory-action {
+    grid-column: 3;
+    grid-row: 2 / span 2;
+  }
+  .directory-status {
+    grid-column: 1 / span 2;
+  }
+}
+
+@media (max-width: 410px) {
+  .campus-brand {
+    white-space: normal;
+  }
+  .campus-account {
+    gap: 1px;
+  }
+  .campus-demo {
+    font-size: 10px;
+    line-height: 1.2;
+    min-width: 20px;
+  }
+}

@@ -1,174 +1,302 @@
 <script setup lang="ts">
-import { ref, onMounted, computed } from 'vue'
-import {
-  ArrowUpRight,
-  ArrowRight,
-  Building2,
-  CalendarCheck2,
-  Clock3,
-  Activity,
-  MapPin,
-} from 'lucide-vue-next'
-import { venueLocation } from '../types'
-import VenueArt from '../components/VenueArt.vue'
-import BookingTable from '../components/BookingTable.vue'
-import { request } from '../api'
-import { user } from '../state'
-import type { Dashboard, Venue, Booking } from '../types'
-const data = ref<Dashboard>(),
-  venues = ref<Venue[]>([]),
-  loading = ref(true),
-  error = ref(''),
-  refreshError = ref('')
-async function load() {
-  loading.value = true
-  error.value = ''
+import { computed, onMounted, ref } from "vue";
+import { ArrowRight, ArrowUpRight } from "lucide-vue-next";
+import BookingTable from "../components/BookingTable.vue";
+import { request } from "../api";
+import { user } from "../state";
+import { hourText } from "../types";
+import type { Booking, Dashboard } from "../types";
+
+const admin = computed(() => user.value?.role === "ADMIN");
+const bookings = ref<Booking[]>([]);
+const dashboard = ref<Dashboard>();
+const loading = ref(true);
+const error = ref("");
+const refreshError = ref("");
+const now = ref(new Date());
+let refreshVersion = 0;
+
+const zone = "Asia/Shanghai";
+const monthDay = new Intl.DateTimeFormat("zh-CN", {
+  timeZone: zone,
+  month: "long",
+  day: "numeric",
+});
+const month = new Intl.DateTimeFormat("zh-CN", {
+  timeZone: zone,
+  month: "numeric",
+});
+const day = new Intl.DateTimeFormat("zh-CN", {
+  timeZone: zone,
+  day: "numeric",
+});
+const weekday = new Intl.DateTimeFormat("zh-CN", {
+  timeZone: zone,
+  weekday: "long",
+});
+const time = new Intl.DateTimeFormat("en-GB", {
+  timeZone: zone,
+  hour: "2-digit",
+  minute: "2-digit",
+});
+const minute = 60_000;
+
+function startsAt(booking: Booking) {
+  return new Date(`${booking.date}T${hourText(booking.startHour)}:00+08:00`);
+}
+
+const schedule = computed(() =>
+  bookings.value
+    .map((booking) => ({ booking, start: startsAt(booking) }))
+    .sort(
+      (first, second) =>
+        first.start.getTime() - second.start.getTime() ||
+        first.booking.id - second.booking.id,
+    ),
+);
+const next = computed(() =>
+  schedule.value.find(
+    ({ booking, start }) =>
+      booking.status === "APPROVED" &&
+      start.getTime() + booking.durationHours * 60 * minute >
+        now.value.getTime(),
+  ),
+);
+const pending = computed(() =>
+  schedule.value.filter(
+    ({ booking, start }) => booking.status === "PENDING" && start > now.value,
+  ),
+);
+const recent = computed(() =>
+  bookings.value
+    .filter(({ status }) => status !== "PENDING" && status !== "APPROVED")
+    .slice(0, 5),
+);
+const lastBookable = computed(
+  () => new Date(now.value.getTime() + 14 * 24 * 60 * minute),
+);
+
+async function refresh(initial = false) {
+  const version = ++refreshVersion;
+  if (initial) {
+    loading.value = true;
+    error.value = "";
+  }
   try {
-    ;[data.value, venues.value] = await Promise.all([
-      request<Dashboard>('/api/dashboard'),
-      request<Venue[]>('/api/venues'),
-    ])
+    const data = admin.value
+      ? await request<Dashboard>("/api/dashboard")
+      : await request<Booking[]>("/api/bookings");
+    if (version !== refreshVersion) return;
+    if (Array.isArray(data)) bookings.value = data;
+    else dashboard.value = data;
+    now.value = new Date();
+    refreshError.value = "";
   } catch (e) {
-    error.value = (e as Error).message
+    if (version !== refreshVersion) return;
+    if (initial) error.value = (e as Error).message;
+    else refreshError.value = (e as Error).message;
   } finally {
-    loading.value = false
+    if (initial && version === refreshVersion) loading.value = false;
   }
 }
-let refreshVersion = 0
-async function refresh() {
-  const version = ++refreshVersion
-  try {
-    const result = await request<Dashboard>('/api/dashboard')
-    if (version === refreshVersion) {
-      data.value = result
-      refreshError.value = ''
-    }
-  } catch (e) {
-    if (version === refreshVersion) refreshError.value = (e as Error).message
-  }
-}
+
 function updated(booking: Booking) {
-  if (data.value)
-    data.value.recentBookings = data.value.recentBookings.map((b) => (b.id === booking.id ? booking : b))
-  void refresh()
+  if (admin.value && dashboard.value) {
+    dashboard.value.recentBookings = dashboard.value.recentBookings.map(
+      (item) => (item.id === booking.id ? booking : item),
+    );
+  } else {
+    bookings.value = bookings.value.map((item) =>
+      item.id === booking.id ? booking : item,
+    );
+  }
+  void refresh();
 }
-onMounted(load)
-const max = computed(() => Math.max(1, ...(data.value?.trend.map((d) => d.count) || [1])))
-const stats = computed(() => [
-  {
-    title: '开放场馆',
-    value: data.value?.openVenues ?? 0,
-    unit: '处',
-    sub: `共 ${data.value?.venueCount ?? 0} 个场馆`,
-    icon: Building2,
-    color: 'green',
-  },
-  {
-    title: user.value?.role === 'ADMIN' ? '今日有效预约' : '我的今日预约',
-    value: data.value?.todayBookings ?? 0,
-    unit: '单',
-    sub: '待审核、已通过与已签到',
-    icon: CalendarCheck2,
-    color: 'blue',
-  },
-  {
-    title: '待审核预约',
-    value: data.value?.pendingBookings ?? 0,
-    unit: '单',
-    sub: user.value?.role === 'ADMIN' ? '待处理申请' : '等待管理员审核',
-    icon: Clock3,
-    color: 'orange',
-  },
-  {
-    title: '累计预约',
-    value: data.value?.totalBookings ?? 0,
-    unit: '单',
-    sub: user.value?.role === 'ADMIN' ? '全部预约记录' : '我的全部预约记录',
-    icon: Activity,
-    color: 'purple',
-  },
-])
+
+onMounted(() => refresh(true));
 </script>
+
 <template>
   <div class="page-heading">
-    <div>
-      <h1>工作台</h1>
-    </div>
-    <RouterLink :to="user?.role === 'ADMIN' ? '/bookings?status=PENDING' : '/venues'" class="button primary"
-      >{{ user?.role === 'ADMIN' ? '审核预约' : '预约场馆' }}<ArrowUpRight :size="17"
-    /></RouterLink>
+    <h1>工作台</h1>
+    <RouterLink
+      :to="admin ? '/bookings?status=PENDING' : '/venues'"
+      class="button primary"
+    >
+      {{ admin ? "审核预约" : "预约场馆"
+      }}<ArrowUpRight :size="17" aria-hidden="true" />
+    </RouterLink>
   </div>
   <div v-if="error" class="error-state" role="alert">
-    {{ error }}<button class="button secondary" @click="load">重新加载</button>
+    {{ error
+    }}<button class="button secondary" @click="refresh(true)">重新加载</button>
   </div>
-  <div v-else-if="loading" class="loading-state">加载中…</div>
-  <template v-else-if="data">
-    <p v-if="refreshError" class="form-error" role="status">刷新工作台失败。{{ refreshError }}</p>
-    <section class="stats-grid" aria-label="预约概况">
-      <div v-for="s in stats" :key="s.title" class="stat-card">
-        <div class="stat-top">
-          <span>{{ s.title }}</span
-          ><span class="stat-icon" :class="s.color"><component :is="s.icon" :size="18" /></span>
-        </div>
-        <div class="stat-value">
-          {{ s.value }}<span>{{ s.unit }}</span>
-        </div>
-        <p>{{ s.sub }}</p>
-      </div>
-    </section>
-    <div class="dashboard-middle">
-      <section class="panel trend-panel">
-        <div class="section-heading">
-          <div>
-            <h2>预约统计</h2>
-            <p>{{ user?.role === 'ADMIN' ? '近 7 天全校预约' : '近 7 天我的预约' }}</p>
-          </div>
-          <span class="chip">近 7 天</span>
-        </div>
-        <div class="chart">
-          <div v-for="point in data.trend" :key="point.date" class="chart-column">
-            <span class="chart-number">{{ point.count }}</span>
-            <div class="bar-track">
-              <div class="bar" :style="{ height: `${(point.count / max) * 100}%` }"></div>
+  <div v-else-if="loading" class="loading-state" role="status">
+    正在加载预约…
+  </div>
+  <template v-else>
+    <p v-if="refreshError" class="form-error" role="status">
+      刷新预约失败。{{ refreshError }}
+    </p>
+    <BookingTable
+      :bookings="admin ? (dashboard?.recentBookings ?? []) : recent"
+      :show-actions="admin"
+      @updated="updated"
+      @refresh="refresh()"
+    >
+      <template #summary="{ busy, act }">
+        <section
+          v-if="admin && dashboard"
+          class="workbench-admin"
+          aria-labelledby="review-summary"
+        >
+          <h2 id="review-summary">预约处理</h2>
+          <dl>
+            <div>
+              <dt>待审核</dt>
+              <dd>{{ dashboard.pendingBookings }} 条</dd>
             </div>
-            <span class="chart-label">{{ point.date.slice(5).replace('-', '/') }}</span>
-          </div>
-        </div>
-        <div class="chart-foot"><span class="online-dot"></span>按使用日期统计，包含已通过但未签到的预约</div>
-      </section>
-      <section class="panel quick-panel">
-        <div class="section-heading">
+            <div>
+              <dt>今日有效预约</dt>
+              <dd>{{ dashboard.todayBookings }} 条</dd>
+            </div>
+            <div>
+              <dt>开放场馆</dt>
+              <dd>{{ dashboard.openVenues }} / {{ dashboard.venueCount }}</dd>
+            </div>
+            <div>
+              <dt>累计预约</dt>
+              <dd>{{ dashboard.totalBookings }} 条</dd>
+            </div>
+          </dl>
+        </section>
+        <div v-else-if="!admin" class="workbench-grid">
           <div>
-            <h2>开放场馆</h2>
+            <section aria-labelledby="next-booking">
+              <h2 id="next-booking">下一场预约</h2>
+              <div v-if="next" class="next-booking">
+                <time class="next-date" :datetime="next.booking.date">
+                  <span>{{ month.format(next.start) }}</span>
+                  <strong>{{
+                    day.format(next.start).replace("日", "")
+                  }}</strong>
+                  <span>{{ weekday.format(next.start) }}</span>
+                </time>
+                <div class="next-details">
+                  <div class="next-time-row">
+                    <strong class="next-time"
+                      >{{ hourText(next.booking.startHour) }}–{{
+                        hourText(
+                          next.booking.startHour + next.booking.durationHours,
+                        )
+                      }}</strong
+                    >
+                    <span class="status-badge APPROVED">已通过</span>
+                  </div>
+                  <h3>{{ next.booking.venueName }}</h3>
+                  <p>
+                    {{ next.booking.purpose }} ·
+                    {{ next.booking.participants }} 人
+                  </p>
+                  <div class="next-actions">
+                    <button
+                      v-if="next.booking.availableActions.includes('check-in')"
+                      type="button"
+                      class="button primary"
+                      :disabled="busy !== null"
+                      @click="act(next.booking, 'check-in')"
+                    >
+                      立即签到
+                    </button>
+                    <span v-else class="check-in-note">
+                      {{
+                        time.format(next.start.getTime() - 15 * minute)
+                      }}
+                      开始签到
+                    </span>
+                    <button
+                      v-if="next.booking.availableActions.includes('cancel')"
+                      type="button"
+                      class="plain-action"
+                      :disabled="busy !== null"
+                      @click="act(next.booking, 'cancel')"
+                    >
+                      取消预约
+                    </button>
+                  </div>
+                </div>
+              </div>
+              <p v-else class="workbench-empty">暂无已通过的预约。</p>
+            </section>
+            <section
+              class="workbench-pending"
+              aria-labelledby="pending-bookings"
+            >
+              <div class="workbench-section-title">
+                <h2 id="pending-bookings">待审核</h2>
+                <span class="muted">{{ pending.length }} 条</span>
+              </div>
+              <ul v-if="pending.length" class="pending-list">
+                <li
+                  v-for="{ booking, start } in pending.slice(0, 3)"
+                  :key="booking.id"
+                >
+                  <div>
+                    <strong>{{ booking.venueName }}</strong>
+                    <p>
+                      {{ monthDay.format(start) }}
+                      {{ hourText(booking.startHour) }}–{{
+                        hourText(booking.startHour + booking.durationHours)
+                      }}
+                    </p>
+                  </div>
+                  <span class="pending-expiry"
+                    >{{ hourText(booking.startHour) }} 前未审核将过期</span
+                  >
+                  <span class="status-badge PENDING">待审核</span>
+                </li>
+              </ul>
+              <p v-else class="workbench-empty">暂无待审核预约。</p>
+              <RouterLink
+                v-if="pending.length > 3"
+                to="/bookings?status=PENDING"
+                class="workbench-more"
+              >
+                查看全部待审核预约 <ArrowRight :size="16" aria-hidden="true" />
+              </RouterLink>
+            </section>
           </div>
-          <RouterLink to="/venues" class="icon-button" aria-label="查看全部场馆"
-            ><ArrowUpRight :size="20"
-          /></RouterLink>
+          <aside class="workbench-rules" aria-labelledby="booking-rules">
+            <h2 id="booking-rules">预约须知</h2>
+            <dl>
+              <div>
+                <dt>开放预约日期</dt>
+                <dd class="bookable-dates">
+                  {{ monthDay.format(now) }} –
+                  {{ monthDay.format(lastBookable) }}
+                </dd>
+              </div>
+              <div>
+                <dt>签到时间</dt>
+                <dd>开始前 15 分钟至结束前</dd>
+              </div>
+              <div>
+                <dt>取消预约</dt>
+                <dd>预约开始前可取消</dd>
+              </div>
+            </dl>
+          </aside>
         </div>
-        <RouterLink
-          v-for="v in venues.filter((v) => v.enabled).slice(0, 3)"
-          :key="v.id"
-          :to="`/venues?venue=${v.id}`"
-          class="quick-venue"
-          ><div class="quick-art"><VenueArt :theme="v.theme" :category="v.category" /></div>
-          <div class="quick-info">
-            <strong>{{ v.name }}</strong
-            ><span><MapPin :size="12" />{{ venueLocation(v) }}</span>
-          </div>
-          <ArrowUpRight :size="17" class="muted" /></RouterLink
-        ><RouterLink to="/venues" class="quick-all"
-          >全部场馆（{{ data.venueCount }}）<ArrowRight :size="15"
-        /></RouterLink>
-      </section>
-    </div>
-    <section class="panel recent-panel">
-      <div class="section-heading">
-        <div>
-          <h2>最近预约</h2>
-        </div>
-        <RouterLink to="/bookings" class="text-link">全部记录<ArrowRight :size="15" /></RouterLink>
-      </div>
-      <BookingTable :bookings="data.recentBookings" compact @updated="updated" @refresh="refresh" />
-    </section>
+        <section
+          class="workbench-history-heading"
+          aria-labelledby="recent-bookings"
+        >
+          <h2 id="recent-bookings">{{ admin ? "最近预约" : "近期记录" }}</h2>
+          <RouterLink to="/bookings" class="workbench-more">
+            全部记录 <ArrowRight :size="16" aria-hidden="true" />
+          </RouterLink>
+        </section>
+      </template>
+    </BookingTable>
   </template>
 </template>

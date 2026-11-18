@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { ref } from 'vue'
 import { useRouter } from 'vue-router'
-import { Building2, ArrowRight, ShieldCheck, UserRound } from 'lucide-vue-next'
+import { ArrowRight, ShieldCheck, UserRound } from 'lucide-vue-next'
 import { login } from '../state'
 const username = ref('admin'),
   password = ref('Admin123!'),
@@ -30,7 +30,7 @@ async function submit() {
   <div class="login-page">
     <section class="login-form-side">
       <div class="login-form-wrap">
-        <div class="login-logo"><Building2 :size="26" /></div>
+        <img class="login-emblem" src="/sdu-emblem.png" width="60" height="60" alt="" />
         <h1>山东大学场馆预约管理系统</h1>
         <div class="login-role-switch">
           <button type="button" :class="{ selected: username === 'admin' }" @click="choose('admin')">

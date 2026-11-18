@@ -1,7 +1,6 @@
 <script setup lang="ts">
 import { ref, onMounted, watch, computed } from 'vue'
 import { X, MapPin, Users, Clock3, Check, ArrowRight } from 'lucide-vue-next'
-import VenueArt from './VenueArt.vue'
 import type { Venue, Slot } from '../types'
 import { hourText, localDate, bookingPurposes, venueLocation } from '../types'
 import { request } from '../api'
@@ -122,7 +121,6 @@ const slotLabel = { AVAILABLE: '可预约', BUSY: '已占用', EXPIRED: '已过�
       </button>
     </div>
     <div class="modal-venue">
-      <div class="modal-art"><VenueArt :theme="venue.theme" :category="venue.category" /></div>
       <div>
         <h3>{{ venue.name }}</h3>
         <p><MapPin :size="13" />{{ venueLocation(venue) }}</p>

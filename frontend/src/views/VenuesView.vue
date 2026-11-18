@@ -1,111 +1,163 @@
 <script setup lang="ts">
-import { ref, onMounted, computed } from 'vue'
-import { useRoute } from 'vue-router'
-import { Search, MapPin, Users, Clock3, ArrowUpRight, SlidersHorizontal } from 'lucide-vue-next'
-import VenueArt from '../components/VenueArt.vue'
-import BookingModal from '../components/BookingModal.vue'
-import type { Venue } from '../types'
-import { categories, hourText, campuses, venueLocation } from '../types'
-import { request } from '../api'
-import { user } from '../state'
-const venues = ref<Venue[]>([]),
-  query = ref(''),
-  category = ref('全部场馆'),
-  campus = ref('全部校区'),
-  selected = ref<Venue | null>(null),
-  loading = ref(true),
-  error = ref(''),
-  onlyOpen = ref(false),
-  route = useRoute()
+import { computed, onMounted, ref, watch } from "vue";
+import { useRoute } from "vue-router";
+import { ArrowUpRight, Search } from "lucide-vue-next";
+import BookingModal from "../components/BookingModal.vue";
+import type { Venue } from "../types";
+import { categories, hourText, campuses, venueLocation } from "../types";
+import { request } from "../api";
+import { user } from "../state";
+
+const route = useRoute();
+const admin = computed(() => user.value?.role === "ADMIN");
+const venues = ref<Venue[]>([]);
+const query = ref("");
+const category = ref("全部场馆");
+const campus = ref("全部校区");
+const selected = ref<Venue | null>(null);
+const loading = ref(true);
+const error = ref("");
+const onlyOpen = ref(false);
 const filtered = computed(() =>
   venues.value.filter(
-    (v) =>
-      (campus.value === '全部校区' || v.campus === campus.value) &&
-      (category.value === '全部场馆' || v.category === category.value) &&
-      (!onlyOpen.value || v.enabled) &&
-      `${v.name}${v.campus}${v.location}${v.category}`.includes(query.value.trim()),
+    (venue) =>
+      (campus.value === "全部校区" || venue.campus === campus.value) &&
+      (category.value === "全部场馆" || venue.category === category.value) &&
+      (!onlyOpen.value || venue.enabled) &&
+      `${venue.name}${venue.campus}${venue.location}${venue.category}`.includes(
+        query.value.trim(),
+      ),
   ),
-)
+);
+
+function selectLinkedVenue() {
+  const id = Number(route.query.venue);
+  selected.value =
+    venues.value.find(
+      (venue) => venue.id === id && (venue.enabled || admin.value),
+    ) ?? null;
+}
+watch(() => route.query.venue, selectLinkedVenue);
+
 async function load() {
-  loading.value = true
-  error.value = ''
+  loading.value = true;
+  error.value = "";
   try {
-    venues.value = await request<Venue[]>('/api/venues')
-    const id = Number(route.query.venue)
-    selected.value =
-      venues.value.find((v) => v.id === id && (v.enabled || user.value?.role === 'ADMIN')) ?? null
+    venues.value = await request<Venue[]>("/api/venues");
+    selectLinkedVenue();
   } catch (e) {
-    error.value = (e as Error).message
+    error.value = (e as Error).message;
   } finally {
-    loading.value = false
+    loading.value = false;
   }
 }
-onMounted(load)
+onMounted(load);
 </script>
+
 <template>
-  <div class="page-heading">
-    <div>
-      <h1>{{ user?.role === 'ADMIN' ? '场馆浏览' : '场馆预约' }}</h1>
-    </div>
-    <span class="venue-total">共 {{ venues.length }} 个场馆</span>
+  <div class="page-heading directory-heading">
+    <h1>{{ admin ? "场馆浏览" : "场馆预约" }}</h1>
+    <label class="directory-search">
+      <Search :size="19" aria-hidden="true" />
+      <input
+        v-model="query"
+        type="search"
+        aria-label="搜索场馆"
+        placeholder="搜索场馆名称或位置"
+      />
+    </label>
   </div>
-  <div class="venue-filters">
-    <label class="campus-filter"
-      >校区<select v-model="campus" aria-label="筛选校区">
-        <option>全部校区</option>
-        <option v-for="c in campuses" :key="c">{{ c }}</option>
-      </select></label
+  <div class="directory">
+    <aside class="directory-filters" aria-labelledby="directory-filters-title">
+      <h2 id="directory-filters-title">筛选场馆</h2>
+      <label class="directory-campus">
+        校区
+        <select v-model="campus" aria-label="筛选校区">
+          <option>全部校区</option>
+          <option v-for="item in campuses" :key="item">{{ item }}</option>
+        </select>
+      </label>
+      <fieldset class="directory-sports">
+        <legend>运动类型</legend>
+        <label
+          v-for="item in ['全部场馆', ...categories]"
+          :key="item"
+          :class="{ active: category === item }"
+        >
+          <input
+            v-model="category"
+            type="radio"
+            name="venue-category"
+            :value="item"
+          />
+          <span>{{ item }}</span>
+        </label>
+      </fieldset>
+      <label class="directory-open-filter">
+        <input v-model="onlyOpen" type="checkbox" />
+        <span class="directory-switch" aria-hidden="true"></span>
+        仅看开放场馆
+      </label>
+    </aside>
+
+    <section
+      class="directory-results"
+      aria-labelledby="directory-results-title"
     >
-    <div class="search-field">
-      <Search :size="18" /><input v-model="query" aria-label="搜索场馆" placeholder="搜索场馆名称或位置…" />
-    </div>
-    <label class="filter-toggle"
-      ><SlidersHorizontal :size="16" /><input v-model="onlyOpen" type="checkbox" />仅看开放场馆</label
-    >
-  </div>
-  <div class="category-tabs" aria-label="按运动类型筛选">
-    <button
-      v-for="item in ['全部场馆', ...categories]"
-      :key="item"
-      :class="{ active: category === item }"
-      @click="category = item"
-    >
-      {{ item }}</button
-    ><span>{{ filtered.length }} 个结果</span>
-  </div>
-  <div v-if="error" class="error-state" role="alert">
-    {{ error }}<button class="button secondary" @click="load">重新加载</button>
-  </div>
-  <div v-else-if="loading" class="loading-state">加载中…</div>
-  <div v-else-if="!filtered.length" class="empty-state">
-    <Search :size="30" /><strong>未找到匹配场馆</strong>
-  </div>
-  <div v-else class="venues-grid">
-    <article v-for="v in filtered" :key="v.id" class="venue-card">
-      <div class="venue-cover">
-        <VenueArt :theme="v.theme" :category="v.category" /><span class="cover-category">{{
-          v.category
-        }}</span>
+      <div class="directory-results-title">
+        <h2 id="directory-results-title">{{ category }}</h2>
+        <span v-if="!loading && !error" class="muted" role="status"
+          >{{ filtered.length }} 个场馆</span
+        >
       </div>
-      <div class="venue-card-body">
-        <div class="venue-card-heading">
-          <h2>{{ v.name }}</h2>
-          <span class="availability" :class="{ closed: !v.enabled }"
-            ><i></i>{{ v.enabled ? '开放预约' : '暂未开放' }}</span
-          >
-        </div>
-        <p class="venue-location"><MapPin :size="14" />{{ venueLocation(v) }}</p>
-        <p class="card-description">{{ v.description }}</p>
-        <div class="venue-meta">
-          <span><Users :size="14" />{{ v.capacity }} 人以内</span
-          ><span><Clock3 :size="14" />{{ hourText(v.openHour) }}–{{ hourText(v.closeHour) }}</span>
-        </div>
-        <button class="venue-reserve" :disabled="!v.enabled && user?.role !== 'ADMIN'" @click="selected = v">
-          {{ user?.role === 'ADMIN' ? '查看时段' : v.enabled ? '选择时段' : '暂停预约'
-          }}<ArrowUpRight :size="19" />
-        </button>
+      <div v-if="error" class="error-state" role="alert">
+        {{ error
+        }}<button class="button secondary" @click="load">重新加载</button>
       </div>
-    </article>
+      <div v-else-if="loading" class="loading-state" role="status">
+        正在加载场馆…
+      </div>
+      <div v-else-if="!filtered.length" class="empty-state">未找到匹配场馆</div>
+      <div v-else>
+        <div class="directory-row directory-columns" aria-hidden="true">
+          <span>场馆</span><span>开放时段</span><span>容量</span
+          ><span>状态</span>
+        </div>
+        <ul class="directory-list">
+          <li v-for="venue in filtered" :key="venue.id" class="directory-row">
+            <div class="directory-name">
+              <strong>{{ venue.name }}</strong>
+              <span>{{ venueLocation(venue) }}</span>
+            </div>
+            <span class="directory-hours"
+              >{{ hourText(venue.openHour) }}–{{
+                hourText(venue.closeHour)
+              }}</span
+            >
+            <span class="directory-capacity">{{ venue.capacity }} 人以内</span>
+            <span
+              class="directory-status"
+              :class="{ 'is-open': venue.enabled }"
+            >
+              {{ venue.enabled ? "开放预约" : "暂未开放" }}
+            </span>
+            <button
+              type="button"
+              class="directory-action"
+              :disabled="!venue.enabled && !admin"
+              @click="selected = venue"
+            >
+              {{ admin ? "查看时段" : venue.enabled ? "选择时段" : "暂停预约" }}
+              <ArrowUpRight
+                v-if="venue.enabled || admin"
+                :size="15"
+                aria-hidden="true"
+              />
+            </button>
+          </li>
+        </ul>
+      </div>
+    </section>
   </div>
   <BookingModal v-if="selected" :venue="selected" @close="selected = null" />
 </template>

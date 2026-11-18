@@ -5,7 +5,7 @@ import type { Booking, BookingAction } from '../types'
 import { hourText, statusLabels } from '../types'
 import { user, notify } from '../state'
 import { request } from '../api'
-withDefaults(defineProps<{ bookings: Booking[]; compact?: boolean }>(), { compact: false })
+withDefaults(defineProps<{ bookings: Booking[]; showActions?: boolean }>(), { showActions: true })
 const emit = defineEmits<{ updated: [booking: Booking]; refresh: [] }>()
 const busy = ref<number | null>(null)
 const confirmDialog = ref<HTMLDialogElement>()
@@ -47,6 +47,7 @@ function confirm() {
 }
 </script>
 <template>
+  <slot name="summary" :busy="busy" :act="act" />
   <div v-if="!bookings.length" class="empty-state">
     <CalendarDays :size="32" /><strong>暂无预约记录</strong>
     <RouterLink v-if="user?.role === 'STUDENT'" to="/venues" class="text-link">预约场馆</RouterLink>
@@ -59,14 +60,14 @@ function confirm() {
           <th>预约时间</th>
           <th v-if="user?.role === 'ADMIN'">预约人</th>
           <th>状态</th>
-          <th class="align-right">操作</th>
+          <th v-if="showActions" class="align-right">操作</th>
         </tr>
       </thead>
       <tbody>
         <tr v-for="b in bookings" :key="b.id">
           <td class="booking-name">
             <strong>{{ b.venueName }}</strong
-            ><small>{{ compact ? b.location : b.purpose }}</small>
+            ><small>{{ b.purpose }}</small>
           </td>
           <td class="booking-time">
             <span>{{ b.date }}</span
@@ -79,7 +80,7 @@ function confirm() {
           <td class="booking-status">
             <span class="status-badge" :class="b.status"><i></i>{{ statusLabels[b.status] }}</span>
           </td>
-          <td class="align-right booking-actions">
+          <td v-if="showActions" class="align-right booking-actions">
             <div class="row-actions">
               <button v-if="allowed(b, 'approve')" :disabled="busy !== null" @click="act(b, 'approve')">
                 <Check :size="14" />通过
